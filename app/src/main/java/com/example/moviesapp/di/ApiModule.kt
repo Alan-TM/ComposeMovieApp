@@ -45,7 +45,7 @@ object ApiModule {
 
     @Provides
     @Singleton
-    fun providesRecipeApi(retrofit: Retrofit): MoviesApi {
+    fun providesMoviesApi(retrofit: Retrofit): MoviesApi {
         return retrofit.create(MoviesApi::class.java)
     }
 }
