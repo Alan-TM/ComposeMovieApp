@@ -13,19 +13,20 @@ class MoviesRepositoryImpl @Inject constructor(
 
     override suspend fun getNowPlayingMovies(page: Int): ResponseResult<NowPlayingMoviesResponse> {
         val moviesApiResponse = moviesApi.getNowPlayingMovies(page = page)
-        if (!moviesApiResponse.isSuccessful) {
-            return when (moviesApiResponse.code()) {
-                400 -> ResponseResult.Failure(ResponseResult.Failure.Cause.BadRequest)
-                404 -> ResponseResult.Failure(ResponseResult.Failure.Cause.NotFoundError)
-                500 -> ResponseResult.Failure(ResponseResult.Failure.Cause.ServerError)
-                else -> ResponseResult.Failure(ResponseResult.Failure.Cause.UnknownError)
+        return when (moviesApiResponse.code()) {
+            200 -> {
+                val movieList = moviesApiResponse.body().nullOrEmptyReturn()
+                if (movieList.nowPlayingList.isNotEmpty()) {
+                    ResponseResult.Success(movieList)
+                } else {
+                    ResponseResult.Failure(ResponseResult.Failure.Cause.EmptyListError)
+                }
             }
-        }
-        val movieList = moviesApiResponse.body().nullOrEmptyReturn()
-        return if (movieList.nowPlayingList!!.isNotEmpty()) {
-            ResponseResult.Success(movieList)
-        } else {
-            ResponseResult.Failure(ResponseResult.Failure.Cause.EmptyListError)
+
+            400 -> ResponseResult.Failure(ResponseResult.Failure.Cause.BadRequest)
+            404 -> ResponseResult.Failure(ResponseResult.Failure.Cause.NotFoundError)
+            500 -> ResponseResult.Failure(ResponseResult.Failure.Cause.ServerError)
+            else -> ResponseResult.Failure(ResponseResult.Failure.Cause.UnknownError)
         }
     }
 }
